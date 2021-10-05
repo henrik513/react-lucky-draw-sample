@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import {selectParticipants, addParticipant } from './participantSlice';
-
+import styles from './Participant.css';
 
 export function Participant() {
   const participants = useSelector(selectParticipants);
@@ -12,7 +12,7 @@ export function Participant() {
   return (
     <div>
       <h4>參賽者名單 共 {participants.length} 人參與</h4>
-      <div>
+      <div className="participantList">
         {participants.map(function (user, i) {
           return <User name={user.name} avatar={user.avatar} uid={user.uid} key={i} />
         })}
@@ -25,7 +25,9 @@ export function Participant() {
 function User(props) {
   return (
   <div className="user">
-    <img src={props.avatar} alt={props.name} />
+    <div className="avatar">
+      <img src={props.avatar} alt={props.name} />
+    </div>
     <div uid={props.uid}>
       {props.name}
     </div>
