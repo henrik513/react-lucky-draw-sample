@@ -5,7 +5,7 @@ import { Participant } from './components/Participant/Participant';
 function App() {
   return (
       <div className="App">
-        <CountDown />
+        <CountDown className="inputContainer" />
         <Participant />
       </div>
   );

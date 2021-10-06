@@ -1,10 +1,15 @@
-
+.participantContainer{
+    display: flex;
+    flex-direction: column;
+    max-height: 100vh;
+    align-self: flex-start;
+}
 .participantList{
     width: 300px;
-    height: 100vh;
     overflow-x: hidden;
     overflow-y: auto;
     border-radius: 15px;
+    flex: 1;
 }
 .user{
     display: inline-flex;
@@ -32,6 +37,7 @@
     border-bottom-right-radius: 50%;
     border: 1px solid white;
     box-sizing: border-box;
+    background: white;
 }
 
 .avatar::before{

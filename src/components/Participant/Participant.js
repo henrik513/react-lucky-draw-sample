@@ -1,16 +1,12 @@
-import React, { useState } from 'react';
-import { useSelector, useDispatch } from 'react-redux';
-import {selectParticipants, addParticipant } from './participantSlice';
-import styles from './Participant.css';
+import React from 'react';
+import { useSelector } from 'react-redux';
+import {selectParticipants } from './participantSlice';
+import './Participant.css';
 
 export function Participant() {
   const participants = useSelector(selectParticipants);
-  // const dispatch = useDispatch();
-
-  // dispatch(addParticipant( "Lucas Perez", "https://randomuser.me/api/portraits/thumb/men/72.jpg" , "aba8af0d-4af6-41be-985a-472bc07843ec" ));
-  
   return (
-    <div>
+    <div className="participantContainer">
       <h4>參賽者名單 共 {participants.length} 人參與</h4>
       <div className="participantList">
         {participants.map(function (user, i) {

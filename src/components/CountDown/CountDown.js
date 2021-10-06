@@ -1,79 +1,89 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import {
-  decrement,
-  increment,
-  incrementByAmount,
-  incrementAsync,
-  selectCount,
+  setValue,
+  setProgress,
+  selectProgress
 } from './countDownSlice';
-import { addParticipant } from '../Participant/participantSlice';
-import styles from './CountDown.css';
+
+import { addParticipant, selectParticipants } from '../Participant/participantSlice';
+import Box from '@mui/material/Box';
+import TextField from '@mui/material/TextField';
+import InputAdornment from '@mui/material/InputAdornment';
+import Button from '@mui/material/Button';
+import CountDownTimer from './CountDownTimer';
 
 export function CountDown() {
-  const count = useSelector(selectCount);
-  const dispatch = useDispatch();
-  const [incrementAmount, setIncrementAmount] = useState('2');
-  
-  const getRandom = function(){
-    fetch(`https://randomuser.me/api/1.2/?results=250`, { mode: 'cors'})
-    .then(function(response) {
-      return response.json();
-    })
-    .then(function(myJson) {
 
-      myJson.results.forEach( (user, i ) => {
-        setTimeout(() => {
-          dispatch(addParticipant( `${user.name.first} ${user.name.last}`, user.picture.medium , user.login.uuid ))
-        }, (i+1) * 50);
-        
+  const progress = useSelector(selectProgress);
+  const participants = useSelector(selectParticipants);
+  const dispatch = useDispatch();
+  const [minute, setMinute] = useState(0);
+  const ticker = 400;
+  const getRandom = () => {
+    dispatch(setValue(minute));
+    dispatch(setProgress(true));
+  }
+  
+  const handleChangeMinute = (event) => {
+    setMinute(event.target.value);
+  }
+
+  useEffect( () => {
+    if(progress && minute > 0) {
+      fetch(`https://randomuser.me/api/1.2/?results=1000`, { mode: 'cors'})
+      .then(function(response) {
+        return response.json();
+      })
+      .then(function(json) {
+
+        for(let i = 0 ; i < json.results.length ; i ++){
+          let user = json.results[i];
+          
+          if( (i+1) * ticker > (minute*60000) ){
+            console.log(`expired at ${i+1}`);
+            return;
+          }
+          setTimeout(() => {
+            dispatch(addParticipant( `${user.name.first} ${user.name.last}`, user.picture.medium , user.login.uuid ))
+          }, (i+1) * ticker);
+          
+        };
       });
 
-    });
-  
-  }
+      // pick number 
+      setTimeout(() => {
+        console.log(`total: ${participants}`);
+      }, 60000*minute);
+    }
+    console.log(`current progress ${progress}`);
+  }, [progress, minute, participants, dispatch]);
 
   return (
     <div>
-      <div className={styles.row}>
-        <button
-          className={styles.button}
-          aria-label="Increment value"
-          onClick={() => dispatch(addParticipant( "Lucas Perez", "https://randomuser.me/api/portraits/thumb/men/72.jpg" , "aba8af0d-4af6-41be-985a-472bc07843ec" ))}
-        >
-          +
-        </button>
-        <span className={styles.value}>{count}</span>
-        <button
-          className={styles.button}
-          aria-label="Decrement value"
-          onClick={() => getRandom() }
-        >
-          -
-        </button>
-      </div>
-      <div className={styles.row}>
-        <input
-          className={styles.textbox}
-          aria-label="Set increment amount"
-          value={incrementAmount}
-          onChange={e => setIncrementAmount(e.target.value)}
+      <Box
+        component="form"
+        sx={{
+          '& > :not(style)': { m: 1, width: '25ch' },
+        }}
+        noValidate
+        autoComplete="off"
+      >
+        <TextField required 
+          id="standard-basic" 
+          label="抽獎倒數時間" 
+          variant="standard" 
+          defaultValue={minute} 
+          onChange={handleChangeMinute}
+          InputProps={{
+            endAdornment: <InputAdornment position="end">分鐘</InputAdornment>,
+            inputMode: 'numeric', 
+            pattern: '[0-9]*'
+          }}  
         />
-        <button
-          className={styles.button}
-          onClick={() =>
-            dispatch(incrementByAmount(Number(incrementAmount) || 0))
-          }
-        >
-          Add Amount
-        </button>
-        <button
-          className={styles.asyncButton}
-          onClick={() => dispatch(incrementAsync(Number(incrementAmount) || 0))}
-        >
-          Add Async
-        </button>
-      </div>
+        <Button variant="contained" onClick={() => getRandom() } >設定</Button>
+      </Box>
+      {progress && <CountDownTimer />}
     </div>
   );
 }
