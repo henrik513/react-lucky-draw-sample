@@ -13,15 +13,17 @@ export const participantSlice = createSlice({
           return { payload: { id, name, avatar, uid}}
         }
       },
-      reset : {
+      resetParticipant : {
         reducer : (state) => {
-          state = [];
+          
+          return state = [];
+
         }
       }
   },
 });
 
-export const { addParticipant, reset } = participantSlice.actions;
+export const { addParticipant, resetParticipant } = participantSlice.actions;
 
 export const selectParticipants = state => state.participants;
 

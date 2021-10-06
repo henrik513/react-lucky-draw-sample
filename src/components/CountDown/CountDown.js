@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import {
   setValue,
@@ -6,7 +6,7 @@ import {
   selectProgress
 } from './countDownSlice';
 
-import { addParticipant, selectParticipants } from '../Participant/participantSlice';
+import { addParticipant, resetParticipant } from '../Participant/participantSlice';
 import Box from '@mui/material/Box';
 import TextField from '@mui/material/TextField';
 import InputAdornment from '@mui/material/InputAdornment';
@@ -16,51 +16,46 @@ import CountDownTimer from './CountDownTimer';
 export function CountDown() {
 
   const progress = useSelector(selectProgress);
-  const participants = useSelector(selectParticipants);
   const dispatch = useDispatch();
   const [minute, setMinute] = useState(0);
   const ticker = 400;
   const getRandom = () => {
+    if(progress){
+      return;
+    }
+    dispatch(resetParticipant());
     dispatch(setValue(minute));
     dispatch(setProgress(true));
+
+    const limit = Math.ceil(150 * minute);
+    let startAt = 0;
+    fetch(`https://randomuser.me/api/1.2/?results=${limit}`, { mode: 'cors'})
+    .then(function(response) {
+      startAt = new Date().getTime();
+      return response.json();
+    })
+    .then(function(json) {
+      const _current = new Date().getTime();
+      for(let i = 0 ; i < json.results.length ; i ++){
+        let user = json.results[i];
+        if( _current+((i+1)*ticker) > startAt + (minute*60000) ){
+          return;
+        }
+
+        setTimeout(() => {
+          dispatch(addParticipant( `${user.name.first} ${user.name.last}`, user.picture.medium , user.login.uuid ))
+        }, i*ticker);
+        
+      };
+    });
   }
   
   const handleChangeMinute = (event) => {
     setMinute(event.target.value);
   }
 
-  useEffect( () => {
-    if(progress && minute > 0) {
-      fetch(`https://randomuser.me/api/1.2/?results=1000`, { mode: 'cors'})
-      .then(function(response) {
-        return response.json();
-      })
-      .then(function(json) {
-
-        for(let i = 0 ; i < json.results.length ; i ++){
-          let user = json.results[i];
-          
-          if( (i+1) * ticker > (minute*60000) ){
-            console.log(`expired at ${i+1}`);
-            return;
-          }
-          setTimeout(() => {
-            dispatch(addParticipant( `${user.name.first} ${user.name.last}`, user.picture.medium , user.login.uuid ))
-          }, (i+1) * ticker);
-          
-        };
-      });
-
-      // pick number 
-      setTimeout(() => {
-        console.log(`total: ${participants}`);
-      }, 60000*minute);
-    }
-    console.log(`current progress ${progress}`);
-  }, [progress, minute, participants, dispatch]);
-
   return (
-    <div>
+    <div className="inputContainer">
       <Box
         component="form"
         sx={{
@@ -79,11 +74,12 @@ export function CountDown() {
             endAdornment: <InputAdornment position="end">分鐘</InputAdornment>,
             inputMode: 'numeric', 
             pattern: '[0-9]*'
-          }}  
+          }}
+          disabled={progress}
         />
-        <Button variant="contained" onClick={() => getRandom() } >設定</Button>
+        <Button variant="contained" onClick={() => getRandom()} disabled={progress}>設定</Button>
       </Box>
-      {progress && <CountDownTimer />}
+      <CountDownTimer />
     </div>
   );
 }

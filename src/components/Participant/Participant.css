@@ -54,3 +54,12 @@
     content: " ";
     box-sizing: border-box;
 }
+@media (max-width: 480px) {
+    .participantContainer{
+        width: 100%;
+        max-height: calc( 100vh - 240px);
+    }
+    .participantList{
+        width: 100%;
+    }
+}
